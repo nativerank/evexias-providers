@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\PractitionerType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -25,7 +24,7 @@ return new class extends Migration {
             $table->string('email')->nullable();
             $table->string('specialization')->nullable();
 
-            $table->foreignIdFor(PractitionerType::class);
+            $table->enum('type', \App\PractitionerType::cases())->nullable();
         });
     }
 

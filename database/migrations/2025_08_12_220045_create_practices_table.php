@@ -20,8 +20,9 @@ return new class extends Migration {
 
             $table->string('external_id')->unique();
             $table->string('name');
-
             $table->string('phone')->nullable();
+
+            $table->enum('status', \App\PracticeStatus::cases())->nullable();
         });
     }
 

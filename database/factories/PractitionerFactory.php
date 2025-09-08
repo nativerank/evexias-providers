@@ -17,7 +17,14 @@ class PractitionerFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'first_name' => $this->faker->firstName(),
+            'last_name' => $this->faker->lastName(),
+            'external_id' => $this->faker->unique()->randomNumber(),
+            'external_last_modified_at' => $this->faker->dateTime(),
+            'active' => $this->faker->boolean(80),
+            'email' => $this->faker->unique()->safeEmail(),
+            'specialization' => $this->faker->word(),
+            'type' => $this->faker->randomElement(\App\PractitionerType::cases()),
         ];
     }
 }

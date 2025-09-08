@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\PracticeStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,13 @@ class PracticeFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->company(),
+            'address' => $this->faker->address(),
+            'lng' => $this->faker->longitude(),
+            'lat' => $this->faker->latitude(),
+            'external_id' => $this->faker->randomNumber(),
+            'phone' => $this->faker->phoneNumber(),
+            'status' => $this->faker->randomElement(PracticeStatus::cases()),
         ];
     }
 }
