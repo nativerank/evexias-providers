@@ -45,14 +45,12 @@ final readonly class PracticeDatum
 
     public function address(): string 
     {
-        $parts = array_filter([
+        $addressLines = implode(' ', array_filter([
             $this->address1,
             $this->address2,
-            $this->city,
-            $this->state,
-            $this->postalCode,
-        ]);
+        ]));
+        $cityState = $this->city . ', ' . $this->state;
 
-        return implode(' ', $parts);
+        return implode(' ', [$addressLines, $cityState, $this->postalCode]);
     }
 }
