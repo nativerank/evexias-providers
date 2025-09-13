@@ -30,6 +30,7 @@ class Practice extends Model implements Item
         'lat',
         'lng',
         'status',
+        'tenant_id',
     ];
 
     protected $casts = [

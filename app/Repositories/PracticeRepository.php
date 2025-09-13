@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Data\PracticeDatum;
 use App\Models\Practice;
+use App\Models\Tenant;
 use App\PracticeStatus;
 
 class PracticeRepository
@@ -20,6 +21,7 @@ class PracticeRepository
                 'address' => $practiceDatum->address(),
                 'phone' => $practiceDatum->phone,
                 'status' => $practiceDatum->elite ? PracticeStatus::Elite : null,
+                'tenant_id' => Tenant::query()->sole()->id,
             ],
         );
 
