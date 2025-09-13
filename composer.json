@@ -15,6 +15,7 @@
         "livewire/flux": "^2.1.1",
         "livewire/flux-pro": "^2.2",
         "livewire/volt": "^1.7.0",
+        "nativerank/inventory-sync": "~0.1.13",
         "tapp/laravel-airtable": "^3.0"
     },
     "require-dev": {
@@ -85,6 +86,14 @@
         "flux-pro": {
             "type": "composer",
             "url": "https://composer.fluxui.dev/"
+        },
+        "nr-inventory-sync": {
+            "type": "vcs",
+            "url": "git@github.com:nativerank/inventory-sync.git"
+        },
+        "nr-laravel-queue": {
+            "type": "vcs",
+            "url": "git@github.com:nativerank/laravel-queue.git"
         }
     }
 }

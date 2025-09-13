@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Tenant;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -24,6 +25,8 @@ return new class extends Migration {
             $table->string('phone')->nullable();
 
             $table->string('status')->nullable();
+
+            $table->foreignIdFor(Tenant::class)->default(1)->constrained();
         });
     }
 

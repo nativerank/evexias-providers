@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3e72c723a3475b5b6585b23749ee8c63",
+    "content-hash": "71a25c66cd56db82c94fd8aad2edbb32",
     "packages": [
         {
             "name": "brick/math",
@@ -2377,6 +2377,92 @@
                 }
             ],
             "time": "2025-03-24T10:02:05+00:00"
+        },
+        {
+            "name": "nativerank/inventory-sync",
+            "version": "0.1.13",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:nativerank/inventory-sync.git",
+                "reference": "f2aff6551b1001f8890683fd968f2bd4dae6b16e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nativerank/inventory-sync/zipball/f2aff6551b1001f8890683fd968f2bd4dae6b16e",
+                "reference": "f2aff6551b1001f8890683fd968f2bd4dae6b16e",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "*",
+                "nativerank/laravel-queue": "^0.0.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NativeRank\\InventorySync\\Providers\\InventorySyncServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NativeRank\\InventorySync\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Mitchell Smith",
+                    "email": "mitchsmith91@gmail.com"
+                }
+            ],
+            "support": {
+                "source": "https://github.com/nativerank/inventory-sync/tree/0.1.13",
+                "issues": "https://github.com/nativerank/inventory-sync/issues"
+            },
+            "time": "2025-08-26T22:35:14+00:00"
+        },
+        {
+            "name": "nativerank/laravel-queue",
+            "version": "0.0.1",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:nativerank/laravel-queue.git",
+                "reference": "a34d603f0caa7d80203f9530ecfc0cb1dfbfe6c2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nativerank/laravel-queue/zipball/a34d603f0caa7d80203f9530ecfc0cb1dfbfe6c2",
+                "reference": "a34d603f0caa7d80203f9530ecfc0cb1dfbfe6c2",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/bus": "*",
+                "illuminate/queue": "*"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NativeRank\\LaravelQueue\\Providers\\QueueServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NativeRank\\LaravelQueue\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Mitchell Smith",
+                    "email": "mitchsmith91@gmail.com"
+                }
+            ],
+            "support": {
+                "source": "https://github.com/nativerank/laravel-queue/tree/0.0.1",
+                "issues": "https://github.com/nativerank/laravel-queue/issues"
+            },
+            "time": "2025-03-09T14:00:54+00:00"
         },
         {
             "name": "nesbot/carbon",
