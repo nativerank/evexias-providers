@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\PracticeStatus;
 use Database\Factories\PracticeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,21 @@ class Practice extends Model
 {
     /** @use HasFactory<PracticeFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'external_id',
+        'unique_name',
+        'phone',
+        'name',
+        'address',
+        'lat',
+        'lng',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => PracticeStatus::class,
+    ];
 
 
     public function practitioners(): BelongsToMany

@@ -84,7 +84,7 @@
     "repositories": {
         "flux-pro": {
             "type": "composer",
-            "url": "https://composer.fluxui.dev"
+            "url": "https://composer.fluxui.dev/"
         }
     }
 }

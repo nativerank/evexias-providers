@@ -4,6 +4,6 @@ namespace App;
 
 enum PractitionerType: string
 {
-    case PracticeStaff = 'Practice Staff';
-    case Practitioner = 'Practitioner';
+    case Additional = 'Add\'t Practitioner';
+    case Primary = 'Primary Practitioner';
 }

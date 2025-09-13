@@ -18,11 +18,12 @@ return new class extends Migration {
             $table->decimal('lng', 10, 7)->nullable();
             $table->decimal('lat', 10, 7)->nullable();
 
-            $table->string('external_id')->unique();
+            $table->unsignedBigInteger('external_id')->unique();
+            $table->string('unique_name')->unique();
             $table->string('name');
             $table->string('phone')->nullable();
 
-            $table->enum('status', \App\PracticeStatus::cases())->nullable();
+            $table->string('status')->nullable();
         });
     }
 

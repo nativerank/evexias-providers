@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('practitioners', function (Blueprint $table) {
             $table->id();
-            $table->string('external_id')->unique();
+            $table->unsignedBigInteger('external_id')->unique();
 
             $table->timestamps();
             $table->dateTime('external_last_modified_at')->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->string('email')->nullable();
             $table->string('specialization')->nullable();
 
-            $table->enum('type', \App\PractitionerType::cases())->nullable();
+            $table->string('practitioner_type')->nullable();
         });
     }
 
