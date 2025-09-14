@@ -30,7 +30,10 @@ class PracticeService
         do {
             $request = new FetchPracticesRequest($this->key, $next);
             $generator = $this->fetch($request);
-            yield from $generator;
+
+            foreach($generator as $practiceDatum) {
+                yield PracticeDatum::parse($practiceDatum);
+            }
 
             $next = $generator->getReturn();
         } while(! empty($next));
@@ -43,7 +46,14 @@ class PracticeService
         do {
             $request = new FetchPracticesByDateRangeRequest($this->key, $next, $startDate, $endDate);
             $generator = $this->fetch($request);
-            yield from $generator;
+
+            foreach ($generator as $practiceDateRangeDatum) {
+                $fullPracticeDatum = $this->fetchOne($practiceDateRangeDatum['id']);
+
+                if (isset($fullPracticeDatum)) {
+                    yield $fullPracticeDatum;
+                }
+            }
 
             $next = $generator->getReturn();
         } while(! empty($next));
@@ -80,9 +90,7 @@ class PracticeService
         $next = $json['next'];
         $results = $json['results'];
 
-        foreach ($results as $result) {
-            yield PracticeDatum::parse($result);
-        }
+        yield from $results;
 
         return $next;
     }

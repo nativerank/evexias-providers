@@ -6,26 +6,39 @@ use App\Api\Exceptions\MyEvexiasRequestFailedException;
 use App\Data\PracticeDatum;
 use App\Repositories\PracticeRepository;
 use App\Services\PracticeService;
+use Exception;
 use Generator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 class PracticeImporter
 {
     private const string LAST_IMPORT_KEY = 'myevexias-com-import:last-timestamp:practice-date-range';
     private const string IMPORT_NEXT_PAGE_KEY = 'myevexias-com-import:next-page:';
+    private string $resource;
+    private ?Carbon $lastImport;
+    private array $processed = [];
 
     public function __construct(
         private readonly PracticeService $service,
         private readonly PracticeRepository $repository,
         private readonly PractitionerImporter $practitionerImporter,
-    ) {}
+    ) {
+        $this->lastImport = Cache::get(self::LAST_IMPORT_KEY);
+
+        if (is_null($this->lastImport)) {
+            $this->resource = 'practice';
+        } else {
+            $this->resource = 'practice-date-range';   
+        }
+    }
 
     public function import(): void
     {
         try {
             $this->runImport();
         } catch (MyEvexiasRequestFailedException $exception) {
-            if (in_array($exception->resource, ['practice', 'practice-date-range'])) {
+            if ($exception->resource === $this->resource) {
                 Cache::put(self::IMPORT_NEXT_PAGE_KEY . $exception->resource, $exception->nextLink, now()->addMinutes(30));
             }
 
@@ -42,12 +55,12 @@ class PracticeImporter
         /** @var PracticeDatum $practiceDatum */
         foreach($generator as $practiceDatum) {
             if (! $practiceDatum->active) {
-                // $this->repository->delete($practiceDatum);
+                $this->repository->delete($practiceDatum);
                 continue;
             }
 
             if (! $practiceDatum->visible) {
-                // $this->repository->delete($practiceDatum);
+                $this->repository->delete($practiceDatum);
                 continue;
             }
 
@@ -55,21 +68,29 @@ class PracticeImporter
 
             $practice = $this->repository->save($practiceDatum);
             $this->practitionerImporter->import($practice, $practiceDatum->practitioners);
+            $this->processed[] = $practice->id;
+        }
+
+        if ($this->resource === 'practice') {
+            $this->repository->cleanUp($this->processed);
         }
 
         Cache::put(self::LAST_IMPORT_KEY, $start);
+        Cache::forget(self::IMPORT_NEXT_PAGE_KEY . $this->resource);
     }
 
     private function generator(): Generator
     {
-        $lastImport = Cache::get(self::LAST_IMPORT_KEY);
+        $nextPage = Cache::get(self::IMPORT_NEXT_PAGE_KEY . $this->resource);
      
-        if (is_null($lastImport)) {
-            $nextPage = Cache::get(self::IMPORT_NEXT_PAGE_KEY . 'practice');
+        if ($this->resource === 'practice') {
             return $this->service->fetchAll($nextPage);
         }
 
-        $nextPage = Cache::get(self::IMPORT_NEXT_PAGE_KEY . 'practice-date-range');
-        return $this->service->fetchByDateRange($lastImport, now(), $nextPage);
+        if ($this->resource === 'practice-date-range') {
+            return $this->service->fetchByDateRange($this->lastImport, now(), $nextPage);
+        }
+
+        throw new Exception('invalid resource ' . $this->resource);
     }
 }

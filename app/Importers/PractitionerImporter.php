@@ -11,10 +11,12 @@ class PractitionerImporter
         private readonly PractitionerRepository $repository,
     ) {}
 
-    public function import(Practice $practice, array $practitionersData)
+    public function import(Practice $practice, array $practitionersData): array
     {
-        foreach ($practitionersData as $practitionerDatum) {
-            $this->repository->save($practice, $practitionerDatum);
-        }
+        $practitioners = array_map([$this->repository, 'save'], $practitionersData);
+
+        $practice->practitioners()->sync($practitioners);
+
+        return $practitioners;
     }
 }

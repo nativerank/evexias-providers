@@ -8,7 +8,7 @@ use App\Models\Practitioner;
 
 class PractitionerRepository
 {
-    public function save(Practice $practice, PractitionerDatum $practitionerDatum): Practitioner
+    public function save(PractitionerDatum $practitionerDatum): Practitioner
     {
         $practitioner = Practitioner::query()->updateOrCreate(
             ['external_id' => $practitionerDatum->id],
@@ -20,8 +20,6 @@ class PractitionerRepository
                 'active' => $practitionerDatum->active,
             ],
         );
-
-        $practitioner->practices()->syncWithoutDetaching($practice);
         
         return $practitioner;
     }

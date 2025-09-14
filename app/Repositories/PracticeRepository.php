@@ -27,4 +27,20 @@ class PracticeRepository
 
         return $practice;
     }
+
+    public function delete(PracticeDatum $practiceDatum): ?bool
+    {
+        $practice = Practice::query()->firstWhere(['external_id' => $practiceDatum->id]);
+
+        if (is_null($practice)) {
+            return null;
+        }
+
+        return $practice->delete();
+    }
+
+    public function cleanUp(array $existing)
+    {
+        Practice::query()->whereNotIn('id', $existing)->lazy()->each->delete();
+    }
 }

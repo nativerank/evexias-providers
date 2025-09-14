@@ -30,6 +30,11 @@ class PracticeObserver
         event(new ItemSaved($practice));
     }
 
+    public function deleting(Practice $practice): void
+    {
+        $practice->practitioners()->detach();
+    }
+
     /**
      * Handle the Practice "deleted" event.
      */
