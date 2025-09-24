@@ -206,6 +206,48 @@ CREATE TABLE IF NOT EXISTS "tenants"(
   "created_at" datetime,
   "updated_at" datetime
 );
+CREATE TABLE IF NOT EXISTS "personal_access_tokens"(
+  "id" integer primary key autoincrement not null,
+  "tokenable_type" varchar not null,
+  "tokenable_id" integer not null,
+  "name" text not null,
+  "token" varchar not null,
+  "abilities" text,
+  "last_used_at" datetime,
+  "expires_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime
+);
+CREATE INDEX "personal_access_tokens_tokenable_type_tokenable_id_index" on "personal_access_tokens"(
+  "tokenable_type",
+  "tokenable_id"
+);
+CREATE UNIQUE INDEX "personal_access_tokens_token_unique" on "personal_access_tokens"(
+  "token"
+);
+CREATE INDEX "personal_access_tokens_expires_at_index" on "personal_access_tokens"(
+  "expires_at"
+);
+CREATE TABLE IF NOT EXISTS "third_party_connections"(
+  "id" integer primary key autoincrement not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "provider" varchar not null,
+  "class" varchar,
+  "external_id" varchar not null,
+  "connectable_type" varchar not null,
+  "connectable_id" integer not null
+);
+CREATE INDEX "third_party_connections_connectable_type_connectable_id_index" on "third_party_connections"(
+  "connectable_type",
+  "connectable_id"
+);
+CREATE UNIQUE INDEX "third_party_unique" on "third_party_connections"(
+  "connectable_type",
+  "connectable_id",
+  "provider",
+  "external_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -220,3 +262,5 @@ INSERT INTO migrations VALUES(10,'2025_08_12_231746_practice_sales_rep',1);
 INSERT INTO migrations VALUES(11,'2025_09_13_193030_create_endpoints',1);
 INSERT INTO migrations VALUES(12,'2025_09_13_193035_create_endpoint_items',1);
 INSERT INTO migrations VALUES(13,'2025_09_13_193553_create_tenants_table',1);
+INSERT INTO migrations VALUES(14,'2025_09_13_201708_create_personal_access_tokens_table',2);
+INSERT INTO migrations VALUES(15,'2025_09_23_235640_create_third_party_connections_table',2);

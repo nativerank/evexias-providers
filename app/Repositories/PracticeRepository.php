@@ -14,9 +14,9 @@ class PracticeRepository
         $practice = Practice::query()->updateOrCreate(
             [
                 'external_id' => $practiceDatum->id,
-                'unique_name' => $practiceDatum->uniqueName,
             ],
             [
+                'unique_name' => $practiceDatum->uniqueName,
                 'name' => $practiceDatum->name,
                 'address' => $practiceDatum->address(),
                 'phone' => $practiceDatum->phone,
@@ -24,6 +24,9 @@ class PracticeRepository
                 'tenant_id' => Tenant::query()->sole()->id,
             ],
         );
+
+        $this->saveConnections($practice, $practiceDatum);
+        $this->saveMarketingEmails($practice, $practiceDatum);
 
         return $practice;
     }
@@ -42,5 +45,36 @@ class PracticeRepository
     public function cleanUp(array $existing)
     {
         Practice::query()->whereNotIn('id', $existing)->lazy()->each->delete();
+    }
+
+    private function saveConnections(Practice $practice, PracticeDatum $practiceDatum): void
+    {
+        $connections = [];
+        foreach ($practiceDatum->thirdPartyConnections as $connection) {
+            $connection = $practice->thirdPartyConnections()->updateOrCreate(
+                [
+                    'provider' => $connection->provider->value,
+                    'external_id' => $connection->externalId,
+                ],
+                [
+                    'class' => $connection->class?->value,
+                ]
+            );
+
+            $connections[] = $connection->id;
+        }
+
+        $practice->thirdPartyConnections()->whereNotIn('id', $connections)->delete();
+    }
+
+    private function saveMarketingEmails(Practice $practice, PracticeDatum $practiceDatum): void
+    {
+        $marketingEmail = $practice->marketingEmails()->updateOrCreate(
+            [
+                'email' => $practiceDatum->marketingEmail,
+            ]
+        );
+
+        $practice->marketingEmails()->sync([$marketingEmail->id]);
     }
 }

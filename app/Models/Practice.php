@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
 use NativeRank\InventorySync\Contracts\Group;
@@ -53,6 +54,11 @@ class Practice extends Model implements Item
         return $this->belongsToMany(MarketingEmail::class, 'practice_marketing_email');
     }
 
+    public function thirdPartyConnections(): MorphMany
+    {
+        return $this->morphMany(ThirdPartyConnection::class, 'connectable');
+    }
+
     public function syncKey(): string
     {
         return 'practice';
@@ -72,6 +78,11 @@ class Practice extends Model implements Item
             'specialization',
             'practitioner_type',
         ]), $array['practitioners']);
+
+        $array['third_party_connections'] = array_map(fn ($connection) => Arr::only($connection, [
+            'provider',
+            'external_id',
+        ]), $array['third_party_connections']);
 
         return $array;
     }
@@ -95,7 +106,7 @@ class Practice extends Model implements Item
 
     public function itemRelations(): array
     {
-        return ['practitioners'];
+        return ['practitioners', 'thirdPartyConnections', 'marketingEmails'];
     }
     
     public function changesStoreKey(): string

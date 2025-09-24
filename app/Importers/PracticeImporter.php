@@ -3,13 +3,17 @@
 namespace App\Importers;
 
 use App\Api\Exceptions\MyEvexiasRequestFailedException;
+use App\Api\Responses\GeocodeResponse;
 use App\Data\PracticeDatum;
+use App\Models\Practice;
 use App\Repositories\PracticeRepository;
+use App\Services\GeocodingService;
 use App\Services\PracticeService;
 use Exception;
 use Generator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 class PracticeImporter
 {
@@ -23,6 +27,7 @@ class PracticeImporter
         private readonly PracticeService $service,
         private readonly PracticeRepository $repository,
         private readonly PractitionerImporter $practitionerImporter,
+        private readonly GeocodingService $geocodingService,
     ) {
         $this->lastImport = Cache::get(self::LAST_IMPORT_KEY);
 
@@ -46,6 +51,13 @@ class PracticeImporter
         }
     }
 
+    public static function reset(): void
+    {
+        Cache::forget(self::LAST_IMPORT_KEY);
+        Cache::forget(self::IMPORT_NEXT_PAGE_KEY . 'practice');
+        Cache::forget(self::IMPORT_NEXT_PAGE_KEY . 'practice-date-range');
+    }
+
     private function runImport(): void
     {
         $start = now();
@@ -67,6 +79,8 @@ class PracticeImporter
             logger()->debug('importing practice', ['practice' => $practiceDatum->id]);
 
             $practice = $this->repository->save($practiceDatum);
+
+            $this->geocode($practice);
             $this->practitionerImporter->import($practice, $practiceDatum->practitioners);
             $this->processed[] = $practice->id;
         }
@@ -92,5 +106,34 @@ class PracticeImporter
         }
 
         throw new Exception('invalid resource ' . $this->resource);
+    }
+
+    private function geocode(Practice $practice): void
+    {
+        if (empty($practice->address)) {
+            return;
+        }
+
+        if ($practice->wasRecentlyCreated) {
+            $geocode = $this->geocodingService->geocodeAddress($practice->address);
+
+            if (isset($geocode)) {
+                $practice->lat = $geocode->latitude;
+                $practice->lng = $geocode->longitude;
+                $practice->save();
+            }
+
+            return;
+        }
+
+        if ($practice->wasChanged('address')) {
+            $geocode = $this->geocodingService->geocodeAddress($practice->address);
+
+            if (isset($geocode)) {
+                $practice->lat = $geocode->latitude;
+                $practice->lng = $geocode->longitude;
+                $practice->save();
+            }
+        }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Data;
 
+use App\Data\Enums\ThirdPartyClass;
+use App\Data\Enums\ThirdPartyProvider;
+use App\Data\ThirdPartyConnectionDatum;
 use Throwable;
 
 final readonly class PracticeDatum
@@ -20,17 +23,30 @@ final readonly class PracticeDatum
         public bool $active,
         public bool $visible,
         public bool $elite,
+        /** @var ThirdPartyConnectionDatum[] */
+        public array $thirdPartyConnections,
+        /** @var PractitionerDatum[] */
         public array $practitioners,
     ) {}
 
     public static function parse(array $datum): self
     {
+        $thirdPartyConnections = [];
+
+        if (isset($datum['chartedhealth_identifier'])) {
+            $thirdPartyConnections[] = new ThirdPartyConnectionDatum(
+                ThirdPartyProvider::ChartedHealth,
+                ThirdPartyClass::ElectronicHealthRecords,
+                $datum['chartedhealth_identifier'],
+            );
+        }
+
         return new self(
             $datum['id'],
             $datum['practice_id'],
             $datum['marketing_name'] ?: $datum['practice_name'],
             $datum['twilio_number'],
-            $datum['marketing_email'] ?? $datum['pds']['email'] ?? $datum['dsl']['email'],
+            $datum['marketing_email'] ?? $datum['pds']['email'],
             $datum['office_address_line_1'],
             $datum['office_address_line_2'],
             $datum['office_city'],
@@ -39,6 +55,7 @@ final readonly class PracticeDatum
             $datum['is_active'],
             $datum['visible_on_evexipel'],
             $datum['elite'],
+            $thirdPartyConnections,
             array_map([PractitionerDatum::class, 'parse'], $datum['physicians']),
         );
     }

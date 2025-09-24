@@ -10,4 +10,8 @@ class MarketingEmail extends Model
 {
     /** @use HasFactory<MarketingEmailFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'email',
+    ];
 }
