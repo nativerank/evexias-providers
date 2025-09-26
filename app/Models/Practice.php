@@ -188,7 +188,11 @@ class Practice extends Model implements Item
 
     public function shouldBeSearchable(): bool
     {
-        return $this->location()->exists();
+        if (empty($this->location->latitude) || empty($this->location->longitude)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function toSearchableArray()
@@ -206,7 +210,7 @@ class Practice extends Model implements Item
                 'lat' => floatval($lat),
                 'lng' => floatval($lng),
             ],
-            'practitioners' => array_map(fn($connection) => Arr::only($connection, [
+            'third_party_connections' => array_map(fn($connection) => Arr::only($connection, [
                 'provider',
                 'external_id',
             ]), $array['third_party_connections']),

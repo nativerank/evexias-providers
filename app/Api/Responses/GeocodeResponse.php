@@ -5,8 +5,8 @@ namespace App\Api\Responses;
 class GeocodeResponse
 {
     public function __construct(
-        public float $latitude,
-        public float $longitude,
+        public ?float $latitude = null,
+        public ?float $longitude = null,
         public string $formattedAddress,
         public string $placeId,
         public ?string $subpremise = null,
