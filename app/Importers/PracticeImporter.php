@@ -13,6 +13,7 @@ use Exception;
 use Generator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use NativeRank\InventorySync\Facades\InventorySync;
 use Throwable;
 
 class PracticeImporter
@@ -66,6 +67,10 @@ class PracticeImporter
 
         /** @var PracticeDatum $practiceDatum */
         foreach($generator as $practiceDatum) {
+            if ($practiceDatum->name === 'NONE') {
+                continue;
+            }
+            
             if (! $practiceDatum->active) {
                 $this->repository->delete($practiceDatum);
                 continue;
@@ -76,14 +81,13 @@ class PracticeImporter
                 continue;
             }
 
-            logger()->debug('importing practice', ['practice' => $practiceDatum->id]);
-
-            $practice = $this->repository->save($practiceDatum);
-
-            $this->geocode($practice);
-            $this->practitionerImporter->import($practice, $practiceDatum->practitioners);
-            $this->processed[] = $practice->id;
-        }
+            $practice = null;
+            InventorySync::withoutSyncing(function () use (&$practice, $practiceDatum) {
+                $practice = $this->importPractice($practiceDatum);
+            });
+            /** @var Practice $practice */            
+            $practice->save();
+        } 
 
         if ($this->resource === 'practice') {
             $this->repository->cleanUp($this->processed);
@@ -91,6 +95,19 @@ class PracticeImporter
 
         Cache::put(self::LAST_IMPORT_KEY, $start);
         Cache::forget(self::IMPORT_NEXT_PAGE_KEY . $this->resource);
+    }
+
+    public function importPractice(PracticeDatum $practiceDatum): Practice
+    {
+        logger()->debug('importing practice', ['practice' => $practiceDatum->id]);
+
+        $practice = $this->repository->save($practiceDatum);
+
+        $this->geocode($practice);
+        $this->practitionerImporter->import($practice, $practiceDatum->practitioners);
+        $this->processed[] = $practice->id;
+
+        return $practice;
     }
 
     private function generator(): Generator
@@ -108,32 +125,40 @@ class PracticeImporter
         throw new Exception('invalid resource ' . $this->resource);
     }
 
+    
+
     private function geocode(Practice $practice): void
     {
         if (empty($practice->address)) {
-            return;
-        }
-
-        if ($practice->wasRecentlyCreated) {
-            $geocode = $this->geocodingService->geocodeAddress($practice->address);
-
-            if (isset($geocode)) {
-                $practice->lat = $geocode->latitude;
-                $practice->lng = $geocode->longitude;
-                $practice->save();
-            }
-
+            $practice->location()->delete();
             return;
         }
 
         if ($practice->wasChanged('address')) {
-            $geocode = $this->geocodingService->geocodeAddress($practice->address);
-
-            if (isset($geocode)) {
-                $practice->lat = $geocode->latitude;
-                $practice->lng = $geocode->longitude;
-                $practice->save();
-            }
+            $practice->location()->delete();
         }
+
+        if ($practice->location()->exists()) {
+            return;
+        }
+
+        $geocode = $this->geocodingService->geocodeAddress($practice->address);
+
+        if (isset($geocode)) {
+            $practice->location()->create([
+                'place_id' => $geocode->placeId,
+                'latitude' => $geocode->latitude,
+                'longitude' => $geocode->longitude,
+                'formatted_address' => $geocode->formattedAddress,
+                'street_number' => $geocode->streetNumber,
+                'route' => $geocode->route,
+                'subpremise' => $geocode->subpremise,
+                'administrative_area_level_1' => $geocode->administrativeAreaLevel1,
+                'country' => $geocode->country,
+                'postal_code' => $geocode->postalCode,
+                'postal_code_suffix' => $geocode->postalCodeSuffix,
+            ]);
+        }    
+
     }
 }

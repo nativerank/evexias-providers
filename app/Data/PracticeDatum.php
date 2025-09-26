@@ -5,12 +5,14 @@ namespace App\Data;
 use App\Data\Enums\ThirdPartyClass;
 use App\Data\Enums\ThirdPartyProvider;
 use App\Data\ThirdPartyConnectionDatum;
+use Illuminate\Support\Str;
 use Throwable;
 
 final readonly class PracticeDatum
 {
     private function __construct(
         public int $id,
+        public ?string $uuid,
         public string $uniqueName,
         public string $name,
         public string $phone,
@@ -43,8 +45,9 @@ final readonly class PracticeDatum
 
         return new self(
             $datum['id'],
+            $datum['efko_guid'] ?? null,
             $datum['practice_id'],
-            $datum['marketing_name'] ?: $datum['practice_name'],
+            Str::replaceStart('[ELITE] ', '', $datum['marketing_name'] ?: $datum['practice_name']),
             $datum['twilio_number'],
             $datum['marketing_email'] ?? $datum['pds']['email'],
             $datum['office_address_line_1'],

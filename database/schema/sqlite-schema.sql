@@ -76,14 +76,18 @@ CREATE TABLE IF NOT EXISTS "failed_jobs"(
   "failed_at" datetime not null default CURRENT_TIMESTAMP
 );
 CREATE UNIQUE INDEX "failed_jobs_uuid_unique" on "failed_jobs"("uuid");
+CREATE TABLE IF NOT EXISTS "tenants"(
+  "id" integer primary key autoincrement not null,
+  "created_at" datetime,
+  "updated_at" datetime
+);
 CREATE TABLE IF NOT EXISTS "practices"(
   "id" integer primary key autoincrement not null,
   "created_at" datetime,
   "updated_at" datetime,
   "address" varchar not null,
-  "lng" numeric,
-  "lat" numeric,
   "external_id" integer not null,
+  "efko_guid" varchar,
   "unique_name" varchar not null,
   "name" varchar not null,
   "phone" varchar,
@@ -94,6 +98,7 @@ CREATE TABLE IF NOT EXISTS "practices"(
 CREATE UNIQUE INDEX "practices_external_id_unique" on "practices"(
   "external_id"
 );
+CREATE UNIQUE INDEX "practices_efko_guid_unique" on "practices"("efko_guid");
 CREATE UNIQUE INDEX "practices_unique_name_unique" on "practices"(
   "unique_name"
 );
@@ -201,11 +206,6 @@ CREATE INDEX "endpoint_items_source_hash_target_hash_index" on "endpoint_items"(
   "source_hash",
   "target_hash"
 );
-CREATE TABLE IF NOT EXISTS "tenants"(
-  "id" integer primary key autoincrement not null,
-  "created_at" datetime,
-  "updated_at" datetime
-);
 CREATE TABLE IF NOT EXISTS "personal_access_tokens"(
   "id" integer primary key autoincrement not null,
   "tokenable_type" varchar not null,
@@ -248,19 +248,42 @@ CREATE UNIQUE INDEX "third_party_unique" on "third_party_connections"(
   "provider",
   "external_id"
 );
+CREATE TABLE IF NOT EXISTS "locations"(
+  "id" integer primary key autoincrement not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "longitude" numeric not null,
+  "latitude" numeric not null,
+  "formatted_address" varchar not null,
+  "subpremise" varchar,
+  "street_number" varchar,
+  "route" varchar,
+  "administrative_area_level_1" varchar,
+  "country" varchar,
+  "postal_code" varchar,
+  "postal_code_suffix" varchar,
+  "place_id" varchar not null,
+  "locatable_type" varchar not null,
+  "locatable_id" integer not null
+);
+CREATE INDEX "locations_locatable_type_locatable_id_index" on "locations"(
+  "locatable_type",
+  "locatable_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
 INSERT INTO migrations VALUES(3,'0001_01_01_000002_create_jobs_table',1);
-INSERT INTO migrations VALUES(4,'2025_08_12_220045_create_practices_table',1);
-INSERT INTO migrations VALUES(5,'2025_08_12_220055_create_practitioners_table',1);
-INSERT INTO migrations VALUES(6,'2025_08_12_230354_practice_practitioner',1);
-INSERT INTO migrations VALUES(7,'2025_08_12_231412_create_marketing_emails_table',1);
-INSERT INTO migrations VALUES(8,'2025_08_12_231525_practice_marketing_email',1);
-INSERT INTO migrations VALUES(9,'2025_08_12_231657_create_sales_reps_table',1);
-INSERT INTO migrations VALUES(10,'2025_08_12_231746_practice_sales_rep',1);
-INSERT INTO migrations VALUES(11,'2025_09_13_193030_create_endpoints',1);
-INSERT INTO migrations VALUES(12,'2025_09_13_193035_create_endpoint_items',1);
-INSERT INTO migrations VALUES(13,'2025_09_13_193553_create_tenants_table',1);
-INSERT INTO migrations VALUES(14,'2025_09_13_201708_create_personal_access_tokens_table',2);
-INSERT INTO migrations VALUES(15,'2025_09_23_235640_create_third_party_connections_table',2);
+INSERT INTO migrations VALUES(4,'2025_08_11_193553_create_tenants_table',1);
+INSERT INTO migrations VALUES(5,'2025_08_12_220045_create_practices_table',1);
+INSERT INTO migrations VALUES(6,'2025_08_12_220055_create_practitioners_table',1);
+INSERT INTO migrations VALUES(7,'2025_08_12_230354_practice_practitioner',1);
+INSERT INTO migrations VALUES(8,'2025_08_12_231412_create_marketing_emails_table',1);
+INSERT INTO migrations VALUES(9,'2025_08_12_231525_practice_marketing_email',1);
+INSERT INTO migrations VALUES(10,'2025_08_12_231657_create_sales_reps_table',1);
+INSERT INTO migrations VALUES(11,'2025_08_12_231746_practice_sales_rep',1);
+INSERT INTO migrations VALUES(12,'2025_09_13_193030_create_endpoints',1);
+INSERT INTO migrations VALUES(13,'2025_09_13_193035_create_endpoint_items',1);
+INSERT INTO migrations VALUES(14,'2025_09_13_201708_create_personal_access_tokens_table',1);
+INSERT INTO migrations VALUES(15,'2025_09_23_235640_create_third_party_connections_table',1);
+INSERT INTO migrations VALUES(16,'2025_09_25_235529_create_locations_table',1);

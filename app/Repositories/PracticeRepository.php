@@ -16,6 +16,7 @@ class PracticeRepository
                 'external_id' => $practiceDatum->id,
             ],
             [
+                'efko_guid' => $practiceDatum->uuid,
                 'unique_name' => $practiceDatum->uniqueName,
                 'name' => $practiceDatum->name,
                 'address' => $practiceDatum->address(),

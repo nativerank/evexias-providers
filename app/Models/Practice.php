@@ -6,13 +6,16 @@ use App\Observers\PracticeObserver;
 use App\PracticeStatus;
 use Database\Factories\PracticeFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use NativeRank\InventorySync\Contracts\Group;
 use NativeRank\InventorySync\Contracts\Item;
@@ -34,12 +37,31 @@ class Practice extends Model implements Item
         'lng',
         'status',
         'tenant_id',
+        'efko_guid',
     ];
 
     protected $casts = [
         'status' => PracticeStatus::class,
     ];
 
+    protected $appends = [
+        'slug',
+    ];
+
+    protected function slug(): Attribute  
+    {
+        return Attribute::make(
+            get: fn(mixed $value, array $attributes) => Str::slug(
+                implode(' ', 
+                    array_filter([
+                        $attributes['name'],
+                        $this->location?->city,
+                        $this->location?->administrative_area_level_1,
+                    ]),
+                ),
+            ),
+        );
+    }
 
     public function practitioners(): BelongsToMany
     {
@@ -59,6 +81,11 @@ class Practice extends Model implements Item
     public function thirdPartyConnections(): MorphMany
     {
         return $this->morphMany(ThirdPartyConnection::class, 'connectable');
+    }
+
+    public function location(): MorphOne
+    {
+        return $this->morphOne(Location::class, 'locatable');
     }
 
     public function syncKey(): string
@@ -108,7 +135,7 @@ class Practice extends Model implements Item
 
     public function itemRelations(): array
     {
-        return ['practitioners', 'thirdPartyConnections', 'marketingEmails'];
+        return ['practitioners', 'thirdPartyConnections', 'marketingEmails', 'location'];
     }
 
     public function changesStoreKey(): string
@@ -161,20 +188,17 @@ class Practice extends Model implements Item
 
     public function shouldBeSearchable(): bool
     {
-        if (empty($this->lat) || empty($this->lng)) {
-            return false;
-        }
-        return true;
+        return $this->location()->exists();
     }
 
     public function toSearchableArray()
     {
-        $array = $this->loadMissing(['thirdPartyConnections'])->toArray();
-        $lat = $array['lat'];
-        $lng = $array['lng'];
+        $array = $this->loadMissing(['thirdPartyConnections', 'location'])->toSyncArray();
+        $lat = $array['location']['latitude'] ?? null;
+        $lng = $array['location']['longitude'] ?? null;
 
-        unset($array['lat']);
-        unset($array['lng']);
+        unset($array['location']['latitude']);
+        unset($array['location']['longitude']);
 
         return [
             ...$array,
@@ -182,10 +206,6 @@ class Practice extends Model implements Item
                 'lat' => floatval($lat),
                 'lng' => floatval($lng),
             ],
-            'third_party_connections' => array_map(fn($connection) => Arr::only($connection, [
-                'provider',
-                'external_id',
-            ]), $array['third_party_connections'])
         ];
     }
 }

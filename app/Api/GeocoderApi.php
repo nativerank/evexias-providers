@@ -21,15 +21,7 @@ final readonly class GeocoderApi
             throw new Exception('no results from geocoding api');
         }
 
-        $firstResult = $results[0];
-
-        $location = $firstResult['geometry']['location'];
-
-        return new GeocodeResponse(
-            latitude: $location['lat'],
-            longitude: $location['lng'],
-            placeId: $firstResult['place_id'],
-        );
+        return GeocodeResponse::parse($results[0]);
     }
 
 }

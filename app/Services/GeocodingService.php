@@ -41,7 +41,7 @@ final readonly class GeocodingService
         if ($failures >= 5) {
             logger()->warning('geocoding api failures exceeded threshold', ['address' => $address, 'failures' => $failures]);
 
-            return new GeocodeResponse(-1, -1, '');
+            return new GeocodeResponse(-1, -1, '', '');
         }
 
         return null;

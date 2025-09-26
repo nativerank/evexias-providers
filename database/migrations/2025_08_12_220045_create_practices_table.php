@@ -16,10 +16,9 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->string('address');
-            $table->decimal('lng', 10, 7)->nullable();
-            $table->decimal('lat', 10, 7)->nullable();
-
+            
             $table->unsignedBigInteger('external_id')->unique();
+            $table->uuid('efko_guid')->nullable()->unique();
             $table->string('unique_name')->unique();
             $table->string('name');
             $table->string('phone')->nullable();
