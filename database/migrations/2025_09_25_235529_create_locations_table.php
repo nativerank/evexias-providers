@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('subpremise')->nullable();
             $table->string('street_number')->nullable();
             $table->string('route')->nullable();
+            $table->string('locality')->nullable();
             $table->string('administrative_area_level_1')->nullable();
             $table->string('country')->nullable();
             $table->string('postal_code')->nullable();

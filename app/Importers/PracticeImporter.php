@@ -153,6 +153,7 @@ class PracticeImporter
                 'street_number' => $geocode->streetNumber,
                 'route' => $geocode->route,
                 'subpremise' => $geocode->subpremise,
+                'locality' => $geocode->locality,
                 'administrative_area_level_1' => $geocode->administrativeAreaLevel1,
                 'country' => $geocode->country,
                 'postal_code' => $geocode->postalCode,

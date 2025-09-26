@@ -14,6 +14,7 @@ class Location extends Model
         'street_number',
         'route',
         'subpremise',
+        'locality',
         'administrative_area_level_1',
         'country',
         'postal_code',

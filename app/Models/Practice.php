@@ -51,15 +51,19 @@ class Practice extends Model implements Item
     protected function slug(): Attribute  
     {
         return Attribute::make(
-            get: fn(mixed $value, array $attributes) => Str::slug(
-                implode(' ', 
-                    array_filter([
-                        $attributes['name'],
-                        $this->location?->city,
-                        $this->location?->administrative_area_level_1,
-                    ]),
-                ),
-            ),
+            get: function (mixed $value, array $attributes) { 
+                return Str::slug(
+                    implode(' ', 
+                        array_filter([
+                            $attributes['name'],
+                            Str::endsWith(Str::slug($attributes['name']), Str::slug($this->location?->locality)) 
+                                ? null 
+                                : $this->location?->locality,
+                            $this->location?->administrative_area_level_1,
+                        ]),
+                    ),
+                );
+            },
         );
     }
 
