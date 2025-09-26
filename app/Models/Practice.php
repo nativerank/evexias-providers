@@ -193,7 +193,7 @@ class Practice extends Model implements Item
 
     public function toSearchableArray()
     {
-        $array = $this->loadMissing(['thirdPartyConnections', 'location'])->toSyncArray();
+        $array = $this->loadMissing(['thirdPartyConnections', 'location'])->toArray();
         $lat = $array['location']['latitude'] ?? null;
         $lng = $array['location']['longitude'] ?? null;
 
