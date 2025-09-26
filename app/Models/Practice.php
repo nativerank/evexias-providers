@@ -206,6 +206,10 @@ class Practice extends Model implements Item
                 'lat' => floatval($lat),
                 'lng' => floatval($lng),
             ],
+            'practitioners' => array_map(fn($connection) => Arr::only($connection, [
+                'provider',
+                'external_id',
+            ]), $array['third_party_connections']),
         ];
     }
 }
