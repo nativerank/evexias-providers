@@ -103,7 +103,7 @@ class PracticeImporter
 
         $practice = $this->repository->save($practiceDatum);
 
-        $this->geocode($practice);
+        $this->geocode($practice, $practiceDatum);
         $this->practitionerImporter->import($practice, $practiceDatum->practitioners);
         $this->processed[] = $practice->id;
 
@@ -127,7 +127,7 @@ class PracticeImporter
 
     
 
-    private function geocode(Practice $practice): void
+    private function geocode(Practice $practice, PracticeDatum $practiceDatum): void
     {
         if (empty($practice->address)) {
             $practice->location()->delete();
@@ -149,12 +149,12 @@ class PracticeImporter
                 'place_id' => $geocode->placeId,
                 'latitude' => $geocode->latitude,
                 'longitude' => $geocode->longitude,
-                'formatted_address' => $geocode->formattedAddress,
+                'formatted_address' => $geocode->formattedAddress ?? $practice->address,
                 'street_number' => $geocode->streetNumber,
                 'route' => $geocode->route,
                 'subpremise' => $geocode->subpremise,
-                'locality' => $geocode->locality,
-                'administrative_area_level_1' => $geocode->administrativeAreaLevel1,
+                'locality' => $geocode->locality ?? $practiceDatum->city,
+                'administrative_area_level_1' => $geocode->administrativeAreaLevel1 ?? $practiceDatum->state,
                 'country' => $geocode->country,
                 'postal_code' => $geocode->postalCode,
                 'postal_code_suffix' => $geocode->postalCodeSuffix,

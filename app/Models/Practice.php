@@ -207,6 +207,13 @@ class Practice extends Model implements Item
 
         unset($array['location']['latitude']);
         unset($array['location']['longitude']);
+        unset($array['location']['created_at']);
+        unset($array['location']['updated_at']);
+        unset($array['location']['id']);
+        unset($array['location']['locatable_id']);
+        unset($array['location']['locatable_type']);
+        unset($array['created_at']);
+        unset($array['updated_at']);
 
         return [
             ...$array,
