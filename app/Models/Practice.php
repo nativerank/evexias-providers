@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
+use Laravel\Scout\Searchable;
 use NativeRank\InventorySync\Contracts\Group;
 use NativeRank\InventorySync\Contracts\Item;
 
@@ -21,6 +22,7 @@ class Practice extends Model implements Item
 {
     /** @use HasFactory<PracticeFactory> */
     use HasFactory;
+    use Searchable;
 
     protected $fillable = [
         'external_id',
@@ -68,7 +70,7 @@ class Practice extends Model implements Item
     {
         $array = $this->toArray();
 
-        $array['practitioners'] = array_map(fn ($practitioner) => Arr::only($practitioner, [
+        $array['practitioners'] = array_map(fn($practitioner) => Arr::only($practitioner, [
             'id',
             'external_id',
             'active',
@@ -79,7 +81,7 @@ class Practice extends Model implements Item
             'practitioner_type',
         ]), $array['practitioners']);
 
-        $array['third_party_connections'] = array_map(fn ($connection) => Arr::only($connection, [
+        $array['third_party_connections'] = array_map(fn($connection) => Arr::only($connection, [
             'provider',
             'external_id',
         ]), $array['third_party_connections']);
@@ -108,7 +110,7 @@ class Practice extends Model implements Item
     {
         return ['practitioners', 'thirdPartyConnections', 'marketingEmails'];
     }
-    
+
     public function changesStoreKey(): string
     {
         return 'practice_changes_' . $this->getKey();
@@ -154,5 +156,36 @@ class Practice extends Model implements Item
     public function trashed(): bool
     {
         return false;
+    }
+
+
+    public function shouldBeSearchable(): bool
+    {
+        if (empty($this->lat) || empty($this->lng)) {
+            return false;
+        }
+        return true;
+    }
+
+    public function toSearchableArray()
+    {
+        $array = $this->loadMissing(['thirdPartyConnections'])->toArray();
+        $lat = $array['lat'];
+        $lng = $array['lng'];
+
+        unset($array['lat']);
+        unset($array['lng']);
+
+        return [
+            ...$array,
+            '_geoloc' => [
+                'lat' => floatval($lat),
+                'lng' => floatval($lng),
+            ],
+            'third_party_connections' => array_map(fn($connection) => Arr::only($connection, [
+                'provider',
+                'external_id',
+            ]), $array['third_party_connections'])
+        ];
     }
 }

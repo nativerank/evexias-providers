@@ -44,7 +44,7 @@ title('Practices');
 
         <flux:table.column>Phone</flux:table.column>
         <flux:table.column sortable :sorted="$sortBy === 'status'" :direction="$sortDirection"
-                           wire:click="sort('status')">Status
+                           wire:click="sort('status')">Elite
         </flux:table.column>
         <flux:table.column>Address
         </flux:table.column>
@@ -66,8 +66,11 @@ title('Practices');
                 <flux:table.cell class="whitespace-nowrap">{{ $practice->phone }}</flux:table.cell>
 
                 <flux:table.cell>
-                    <flux:badge size="sm" color="green"
-                                inset="top bottom">{{ $practice->status }}</flux:badge>
+                    @if($practice->status?->name === 'Elite')
+                        <flux:badge size="sm" color="green"
+                                    inset="top bottom">Elite</flux:badge>
+                    @endif
+
                 </flux:table.cell>
 
                 <flux:table.cell><spam class="truncate block text-ellipsis w-[100px]">{{ $practice->address }}</spam></flux:table.cell>
