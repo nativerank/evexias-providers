@@ -4,32 +4,32 @@ namespace App\Data;
 
 use App\Data\Enums\ThirdPartyClass;
 use App\Data\Enums\ThirdPartyProvider;
-use App\Data\ThirdPartyConnectionDatum;
 use Illuminate\Support\Str;
-use Throwable;
 
 final readonly class PracticeDatum
 {
     private function __construct(
-        public int $id,
+        public int     $id,
         public ?string $uuid,
-        public string $uniqueName,
-        public string $name,
-        public string $phone,
-        public string $marketingEmail,
-        public string $address1,
-        public string $address2,
-        public string $city,
-        public string $state,
-        public string $postalCode,
-        public bool $active,
-        public bool $visible,
-        public bool $elite,
+        public string  $uniqueName,
+        public string  $name,
+        public string  $phone,
+        public string  $marketingEmail,
+        public string  $address1,
+        public string  $address2,
+        public string  $city,
+        public string  $state,
+        public string  $postalCode,
+        public bool    $active,
+        public bool    $visible,
+        public bool    $elite,
         /** @var ThirdPartyConnectionDatum[] */
-        public array $thirdPartyConnections,
+        public array   $thirdPartyConnections,
         /** @var PractitionerDatum[] */
-        public array $practitioners,
-    ) {}
+        public array   $practitioners,
+    )
+    {
+    }
 
     public static function parse(array $datum): self
     {
@@ -47,7 +47,7 @@ final readonly class PracticeDatum
             $datum['id'],
             $datum['efko_guid'] ?? null,
             $datum['practice_id'],
-            Str::replaceStart('[ELITE] ', '', $datum['marketing_name'] ?: $datum['practice_name']),
+            preg_replace('/^\[ELITE]\s?/', '', $datum['marketing_name'] ?: $datum['practice_name']),
             $datum['twilio_number'],
             $datum['marketing_email'] ?? $datum['pds']['email'],
             $datum['office_address_line_1'],
@@ -63,7 +63,7 @@ final readonly class PracticeDatum
         );
     }
 
-    public function address(): string 
+    public function address(): string
     {
         $addressLines = implode(' ', array_filter([
             $this->address1,
