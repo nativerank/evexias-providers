@@ -15,11 +15,15 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use NativeRank\InventorySync\Contracts\Group;
 use NativeRank\InventorySync\Contracts\Item;
 
+/**
+ * @property Location $location
+ */
 #[ObservedBy(classes: PracticeObserver::class)]
 class Practice extends Model implements Item
 {
@@ -48,16 +52,16 @@ class Practice extends Model implements Item
         'slug',
     ];
 
-    protected function slug(): Attribute  
+    protected function slug(): Attribute
     {
         return Attribute::make(
-            get: function (mixed $value, array $attributes) { 
+            get: function (mixed $value, array $attributes) {
                 return Str::slug(
-                    implode(' ', 
+                    implode(' ',
                         array_filter([
                             $attributes['name'],
-                            Str::endsWith(Str::slug($attributes['name']), Str::slug($this->location?->locality)) 
-                                ? null 
+                            Str::endsWith(Str::slug($attributes['name']), Str::slug($this->location?->locality))
+                                ? null
                                 : $this->location?->locality,
                             $this->location?->administrative_area_level_1,
                         ]),
@@ -65,6 +69,16 @@ class Practice extends Model implements Item
                 );
             },
         );
+    }
+
+    protected function content(): Attribute
+    {
+        return Attribute::make(
+            get: function (mixed $value, array $attributes) {
+                return \Storage::disk($this->getContentFileDisk())->get($this->getContentFilePath());
+            }
+        );
+
     }
 
     public function practitioners(): BelongsToMany
@@ -97,26 +111,44 @@ class Practice extends Model implements Item
         return 'practice';
     }
 
+    public function getContentFilePath(): string
+    {
+        return 'generated_content/content_' . $this->getKey() . '.html';
+    }
+
+    public function getContentFileDisk(): string
+    {
+        return 'local';
+    }
+
     public function toSyncArray(): array
     {
         $array = $this->toArray();
 
-        $array['practitioners'] = array_map(fn($practitioner) => Arr::only($practitioner, [
-            'id',
-            'external_id',
-            'active',
-            'first_name',
-            'last_name',
-            'email',
-            'specialization',
-            'practitioner_type',
-        ]), $array['practitioners']);
+        if (isset($this->content)) {
+            $array['content'] = $this->content;
+            $array['contentHash'] = Storage::disk($this->getContentFileDisk())->lastModified($this->getContentFilePath());
+        }
 
-        $array['third_party_connections'] = array_map(fn($connection) => Arr::only($connection, [
-            'provider',
-            'external_id',
-        ]), $array['third_party_connections']);
+        if (isset($array['practitioners'])) {
+            $array['practitioners'] = array_map(fn($practitioner) => Arr::only($practitioner, [
+                'id',
+                'external_id',
+                'active',
+                'first_name',
+                'last_name',
+                'email',
+                'specialization',
+                'practitioner_type',
+            ]), $array['practitioners']);
+        }
 
+        if (isset($array['third_party_connections'])) {
+            $array['third_party_connections'] = array_map(fn($connection) => Arr::only($connection, [
+                'provider',
+                'external_id',
+            ]), $array['third_party_connections']);
+        }
         return $array;
     }
 
@@ -129,6 +161,7 @@ class Practice extends Model implements Item
             [
                 'created_at',
                 'updated_at',
+                'content'
             ]
         );
 
@@ -151,7 +184,6 @@ class Practice extends Model implements Item
     {
         /** @var Tenant $tenant */
         $tenant = $this->tenant()->sole();
-
         return $tenant;
     }
 

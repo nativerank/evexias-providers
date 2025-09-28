@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Importers\PracticeImporter;
 use Illuminate\Console\Command;
+use Laravel\Scout\Scout;
 
 class PullPractices extends Command
 {

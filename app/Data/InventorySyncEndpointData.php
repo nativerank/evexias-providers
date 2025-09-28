@@ -28,21 +28,21 @@ final readonly class InventorySyncEndpointData implements Endpoint
 
    public function hashCheckUrl(): ?string
     {
-        return $this->url . '/wp-json/marine-manager/' . self::WORDPRESS_REST_API_VERSION . '/practices-hash-check?tm='. Carbon::now()->timestamp;
+        return $this->url . '/wp-json/evexias-providers/' . self::WORDPRESS_REST_API_VERSION . '/practices-hash-check?tm='. Carbon::now()->timestamp;
     }
 
     public function dropPreciselyUrl(): string
     {
-        return $this->url . '/wp-json/marine-manager/' . self::WORDPRESS_REST_API_VERSION . '/drop-precisely';
+        return $this->url . '/wp-json/evexias-providers/' . self::WORDPRESS_REST_API_VERSION . '/drop-precisely';
     }
 
     public function syncUrl(): string
     {
-        return $this->url . '/wp-json/marine-manager/' . self::WORDPRESS_REST_API_VERSION . '/practice';
+        return $this->url . '/wp-json/evexias-providers/' . self::WORDPRESS_REST_API_VERSION . '/practice';
     }
 
     public function dropUrl(): string
     {
-        return $this->url . '/wp-json/marine-manager/' . self::WORDPRESS_REST_API_VERSION . '/drop';
+        return $this->url . '/wp-json/evexias-providers/' . self::WORDPRESS_REST_API_VERSION . '/drop';
     }
 }

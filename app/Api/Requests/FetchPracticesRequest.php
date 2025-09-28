@@ -9,9 +9,10 @@ final readonly class FetchPracticesRequest implements FetchPracticesRequestContr
     public function __construct(
         private string $token,
         private string $url,
-        private ?int $id = null,
-    ) {
-        $queryString = (string) (parse_url($this->url, PHP_URL_QUERY) ?? '');
+        private ?int   $id = null,
+    )
+    {
+        $queryString = (string)(parse_url($this->url, PHP_URL_QUERY) ?? '');
         parse_str($queryString, $query);
         $this->query = $query;
     }
@@ -28,12 +29,13 @@ final readonly class FetchPracticesRequest implements FetchPracticesRequestContr
         ];
     }
 
-    public function query(): array 
-    { 
+    public function query(): array
+    {
+        $query = $this->query;
         if (isset($this->id)) {
-            $this->query['id'] = $this->id;
+            $query['id'] = $this->id;
         }
 
-        return $this->query;
+        return $query;
     }
 }
