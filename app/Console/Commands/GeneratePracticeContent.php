@@ -27,7 +27,9 @@ class GeneratePracticeContent extends Command
      */
     public function handle()
     {
-        $practices = Practice::query()->whereHas('location')->with(['location'])->get();
+        $practices = Practice::query()->whereHas('location')->with(['location'])->get()->filter(function (Practice $practice) {
+            return !isset($practice->content);
+        });
         $bar = $this->output->createProgressBar($practices->count());
 
         $practices->each(function (Practice $practice) use ($bar) {
