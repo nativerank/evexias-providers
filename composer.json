@@ -19,6 +19,7 @@
         "livewire/flux-pro": "^2.2",
         "livewire/volt": "^1.7.0",
         "nativerank/inventory-sync": "~0.1.13",
+        "propaganistas/laravel-phone": "^6.0",
         "tapp/laravel-airtable": "^3.0"
     },
     "require-dev": {

@@ -2,11 +2,13 @@
 
 namespace App\Api\Responses;
 
-class GeocodeResponse
+use Illuminate\Support\Arr;
+
+class PlaceResult
 {
     public function __construct(
-        public ?float $latitude = null,
-        public ?float $longitude = null,
+        public ?float $latitude,
+        public ?float $longitude,
         public string $formattedAddress,
         public string $placeId,
         public ?string $subpremise = null,
@@ -17,9 +19,13 @@ class GeocodeResponse
         public ?string $country = null,
         public ?string $postalCode = null,
         public ?string $postalCodeSuffix = null,
+        public ?string $mapsUri = null,
+        public array $googleMapsLinks = [],
+        public array $reviews = [],
+        public array $photos = [],
     ) {}
 
-    public static function parse(array $result): self
+    public static function parseGeocodingResult(array $result): self
     {
         return new self(
             latitude: $result['geometry']['location']['lat'],
@@ -37,11 +43,33 @@ class GeocodeResponse
         );
     }
 
+    public static function parseTextSearchResult(array $result): self
+    {
+        return new self(
+            latitude: $result['location']['latitude'],
+            longitude: $result['location']['longitude'],
+            formattedAddress: $result['formattedAddress'] ?? '',
+            placeId: $result['id'] ?? '',
+            subpremise: self::extractAddressComponent($result['addressComponents'], 'subpremise'),
+            streetNumber: self::extractAddressComponent($result['addressComponents'], 'street_number'),
+            route: self::extractAddressComponent($result['addressComponents'], 'route'),
+            locality: self::extractAddressComponent($result['addressComponents'], 'locality'),
+            administrativeAreaLevel1: self::extractAddressComponent($result['addressComponents'], 'administrative_area_level_1'),
+            country: self::extractAddressComponent($result['addressComponents'], 'country'),
+            postalCode: self::extractAddressComponent($result['addressComponents'], 'postal_code'),
+            postalCodeSuffix: self::extractAddressComponent($result['addressComponents'], 'postal_code_suffix'),
+            mapsUri: $result['googleMapsUri'] ?? null,
+            googleMapsLinks: $result['googleMapsLinks'] ?? [],
+            reviews: array_filter($result['reviews'] ?? [], fn($review) => $review['rating'] === 5),
+            photos: Arr::take($result['photos'] ?? [], 5),
+        );
+    }
+
     private static function extractAddressComponent(array $components, string $type): ?string
     {
         foreach ($components as $component) {
             if (in_array($type, $component['types'], true)) {
-                return $component['short_name'];
+                return $component['short_name'] ?? $component['shortText'];
             }
         }
 

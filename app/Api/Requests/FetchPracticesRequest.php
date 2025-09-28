@@ -9,9 +9,8 @@ final readonly class FetchPracticesRequest implements FetchPracticesRequestContr
     public function __construct(
         private string $token,
         private string $url,
-        private ?int   $id = null,
-    )
-    {
+        private ?int $id = null,
+    ) {
         $queryString = (string)(parse_url($this->url, PHP_URL_QUERY) ?? '');
         parse_str($queryString, $query);
         $this->query = $query;

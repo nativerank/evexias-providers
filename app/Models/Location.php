@@ -19,5 +19,10 @@ class Location extends Model
         'country',
         'postal_code',
         'postal_code_suffix',
+        'metadata',
+    ];
+
+    protected $casts = [
+        'metadata' => 'array',
     ];
 }

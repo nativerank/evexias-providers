@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('country')->nullable();
             $table->string('postal_code')->nullable();
             $table->string('postal_code_suffix')->nullable();
+            $table->json('metadata')->nullable();
 
             $table->string('place_id');
 

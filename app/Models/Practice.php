@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use NativeRank\InventorySync\Contracts\Group;
 use NativeRank\InventorySync\Contracts\Item;
+use Propaganistas\LaravelPhone\Casts\RawPhoneNumberCast;
 
 /**
  * @property Location $location
@@ -46,6 +47,7 @@ class Practice extends Model implements Item
 
     protected $casts = [
         'status' => PracticeStatus::class,
+        'phone' => RawPhoneNumberCast::class . ':US',
     ];
 
     protected $appends = [
@@ -130,25 +132,41 @@ class Practice extends Model implements Item
             $array['contentHash'] = Storage::disk($this->getContentFileDisk())->lastModified($this->getContentFilePath());
         }
 
-        if (isset($array['practitioners'])) {
-            $array['practitioners'] = array_map(fn($practitioner) => Arr::only($practitioner, [
-                'id',
-                'external_id',
-                'active',
-                'first_name',
-                'last_name',
-                'email',
-                'specialization',
-                'practitioner_type',
-            ]), $array['practitioners']);
-        }
+        $array['phone_formatted'] = $this->phone->formatNational();
 
-        if (isset($array['third_party_connections'])) {
-            $array['third_party_connections'] = array_map(fn($connection) => Arr::only($connection, [
-                'provider',
-                'external_id',
-            ]), $array['third_party_connections']);
-        }
+        $array['practitioners'] = array_map(fn($practitioner) => Arr::only($practitioner, [
+            'id',
+            'external_id',
+            'active',
+            'first_name',
+            'last_name',
+            'email',
+            'specialization',
+            'practitioner_type',
+        ]), $array['practitioners'] ?? []);
+        
+        $array['third_party_connections'] = array_map(fn($connection) => Arr::only($connection, [
+            'provider',
+            'external_id',
+        ]), $array['third_party_connections'] ?? []);
+        
+        $array['location'] = Arr::only($array['location'] ?? [], [
+            'place_id',
+            'latitude',
+            'longitude',
+            'formatted_address',
+            'street_number',
+            'route',
+            'subpremise',
+            'locality',
+            'administrative_area_level_1',
+            'country',
+            'postal_code',
+            'postal_code_suffix',
+            'metadata',
+        ]);
+
+
         return $array;
     }
 
@@ -161,7 +179,9 @@ class Practice extends Model implements Item
             [
                 'created_at',
                 'updated_at',
-                'content'
+                'content',
+                'location.metadata.reviews',
+                'location.metadata.photos',
             ]
         );
 
@@ -253,6 +273,7 @@ class Practice extends Model implements Item
                 'lat' => floatval($lat),
                 'lng' => floatval($lng),
             ],
+            'phone_formatted' => $this->phone->formatNational(),
             'third_party_connections' => array_map(fn($connection) => Arr::only($connection, [
                 'provider',
                 'external_id',

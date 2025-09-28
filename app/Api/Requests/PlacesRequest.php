@@ -2,7 +2,7 @@
 
 namespace App\Api\Requests;
 
-final readonly class GeocodeRequest
+final readonly class PlacesRequest
 {
     public function __construct(
         public string $key,
@@ -14,6 +14,13 @@ final readonly class GeocodeRequest
         return [
             'key' => $this->key,
             'address' => $this->address,
+        ];
+    }
+
+    public function body(): array
+    {
+        return [
+            'textQuery' => $this->address,
         ];
     }
 }

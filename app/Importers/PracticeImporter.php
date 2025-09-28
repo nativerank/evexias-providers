@@ -3,18 +3,16 @@
 namespace App\Importers;
 
 use App\Api\Exceptions\MyEvexiasRequestFailedException;
-use App\Api\Responses\GeocodeResponse;
 use App\Data\PracticeDatum;
 use App\Models\Practice;
 use App\Repositories\PracticeRepository;
-use App\Services\GeocodingService;
+use App\Services\PlacesService;
 use App\Services\PracticeService;
 use Exception;
 use Generator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use NativeRank\InventorySync\Facades\InventorySync;
-use Throwable;
 
 class PracticeImporter
 {
@@ -28,7 +26,7 @@ class PracticeImporter
         private readonly PracticeService $service,
         private readonly PracticeRepository $repository,
         private readonly PractitionerImporter $practitionerImporter,
-        private readonly GeocodingService $geocodingService,
+        private readonly PlacesService $placesService,
     ) {
         $this->lastImport = Cache::get(self::LAST_IMPORT_KEY);
 
@@ -103,7 +101,7 @@ class PracticeImporter
 
         $practice = $this->repository->save($practiceDatum);
 
-        $this->geocode($practice, $practiceDatum);
+        $this->locate($practice, $practiceDatum);
         $this->practitionerImporter->import($practice, $practiceDatum->practitioners);
         $this->processed[] = $practice->id;
 
@@ -127,14 +125,14 @@ class PracticeImporter
 
     
 
-    private function geocode(Practice $practice, PracticeDatum $practiceDatum): void
+    private function locate(Practice $practice, PracticeDatum $practiceDatum): void
     {
         if (empty($practice->address)) {
             $practice->location()->delete();
             return;
         }
 
-        if ($practice->wasChanged('address')) {
+        if ($practice->wasChanged('address') || $practice->wasChanged('name')) {
             $practice->location()->delete();
         }
 
@@ -142,24 +140,29 @@ class PracticeImporter
             return;
         }
 
-        $geocode = $this->geocodingService->geocodeAddress($practice->address);
+        $place = $this->placesService->textSearch($practice->name . ' at ' . $practice->address);
 
-        if (isset($geocode)) {
+        if (isset($place)) {
             $practice->location()->create([
-                'place_id' => $geocode->placeId,
-                'latitude' => $geocode->latitude,
-                'longitude' => $geocode->longitude,
-                'formatted_address' => $geocode->formattedAddress ?? $practice->address,
-                'street_number' => $geocode->streetNumber,
-                'route' => $geocode->route,
-                'subpremise' => $geocode->subpremise,
-                'locality' => $geocode->locality ?? $practiceDatum->city,
-                'administrative_area_level_1' => $geocode->administrativeAreaLevel1 ?? $practiceDatum->state,
-                'country' => $geocode->country,
-                'postal_code' => $geocode->postalCode,
-                'postal_code_suffix' => $geocode->postalCodeSuffix,
+                'place_id' => $place->placeId,
+                'latitude' => $place->latitude,
+                'longitude' => $place->longitude,
+                'formatted_address' => $place->formattedAddress ?? $practice->address,
+                'street_number' => $place->streetNumber,
+                'route' => $place->route,
+                'subpremise' => $place->subpremise,
+                'locality' => $place->locality ?? $practiceDatum->city,
+                'administrative_area_level_1' => $place->administrativeAreaLevel1 ?? $practiceDatum->state,
+                'country' => $place->country,
+                'postal_code' => $place->postalCode,
+                'postal_code_suffix' => $place->postalCodeSuffix,
+                'metadata' => [
+                    'maps_uri' => $place->mapsUri,
+                    'reviews' => $place->reviews,
+                    'photos' => $place->photos,
+                    'google_maps_links' => $place->googleMapsLinks,
+                ],
             ]);
-        }    
-
+        }
     }
 }

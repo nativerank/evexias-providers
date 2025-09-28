@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Api\GeocoderApi;
-use App\Services\GeocodingService;
+use App\Api\PlacesApi;
+use App\Services\PlacesService;
 use Illuminate\Support\ServiceProvider;
 
 class GeocodingProvider extends ServiceProvider
@@ -13,12 +13,12 @@ class GeocodingProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(GeocodingService::class, function ($app) {
-            $config = $app['config']->get('geocoding');
+        $this->app->singleton(PlacesService::class, function ($app) {
+            $config = $app['config']->get('places');
 
-            return new GeocodingService(
+            return new PlacesService(
                 key: $config['key'],
-                api: $app->make(GeocoderApi::class),
+                api: $app->make(PlacesApi::class),
             );
         });
     }
