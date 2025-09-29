@@ -97,7 +97,7 @@ class PracticeImporter
 
     public function importPractice(PracticeDatum $practiceDatum): Practice
     {
-        logger()->debug('importing practice', ['practice' => $practiceDatum->id]);
+        logger()->debug('importing practice', ['practice' => $practiceDatum->id, 'unique_name' => $practiceDatum->uniqueName]);
 
         $practice = $this->repository->save($practiceDatum);
 
@@ -110,14 +110,13 @@ class PracticeImporter
 
     private function generator(): Generator
     {
-        $nextPage = Cache::get(self::IMPORT_NEXT_PAGE_KEY . $this->resource);
      
         if ($this->resource === 'practice') {
-            return $this->service->fetchAll($nextPage);
+            return $this->service->fetchAll(null);
         }
 
         if ($this->resource === 'practice-date-range') {
-            return $this->service->fetchByDateRange($this->lastImport, now(), $nextPage);
+            return $this->service->fetchByDateRange($this->lastImport, now(), Cache::get(self::IMPORT_NEXT_PAGE_KEY . $this->resource));
         }
 
         throw new Exception('invalid resource ' . $this->resource);
@@ -161,6 +160,8 @@ class PracticeImporter
                     'reviews' => $place->reviews,
                     'photos' => $place->photos,
                     'google_maps_links' => $place->googleMapsLinks,
+                    'hours' => $place->hours,
+                    'website_uri' => $place->websiteUri,
                 ],
             ]);
         }

@@ -43,12 +43,18 @@ final readonly class PracticeDatum
             );
         }
 
+        $phone = $datum['twilio_number'] ?? null;
+
+        if (! empty($phone) && str_starts_with($phone, '1')) {
+            $phone = Str::start($phone, '+');
+        }
+
         return new self(
             $datum['id'],
             $datum['efko_guid'] ?? null,
             $datum['practice_id'],
             preg_replace('/^\[ELITE]\s?/', '', $datum['marketing_name'] ?: $datum['practice_name']),
-            $datum['twilio_number'],
+            $phone,
             $datum['marketing_email'] ?? $datum['pds']['email'],
             $datum['office_address_line_1'],
             $datum['office_address_line_2'],

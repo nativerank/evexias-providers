@@ -132,7 +132,7 @@ class Practice extends Model implements Item
             $array['contentHash'] = Storage::disk($this->getContentFileDisk())->lastModified($this->getContentFilePath());
         }
 
-        $array['phone_formatted'] = $this->phone->formatNational();
+        $array['phone_formatted'] = rescue(fn () => $this->phone?->formatNational());
 
         $array['practitioners'] = array_map(fn($practitioner) => Arr::only($practitioner, [
             'id',
@@ -273,7 +273,7 @@ class Practice extends Model implements Item
                 'lat' => floatval($lat),
                 'lng' => floatval($lng),
             ],
-            'phone_formatted' => $this->phone->formatNational(),
+            'phone_formatted' => rescue(fn () => $this->phone?->formatNational()),
             'third_party_connections' => array_map(fn($connection) => Arr::only($connection, [
                 'provider',
                 'external_id',

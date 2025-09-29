@@ -23,6 +23,8 @@ class PlaceResult
         public array $googleMapsLinks = [],
         public array $reviews = [],
         public array $photos = [],
+        public array $hours = [],
+        public ?string $websiteUri = null,
     ) {}
 
     public static function parseGeocodingResult(array $result): self
@@ -62,13 +64,15 @@ class PlaceResult
             googleMapsLinks: $result['googleMapsLinks'] ?? [],
             reviews: array_filter($result['reviews'] ?? [], fn($review) => $review['rating'] === 5),
             photos: Arr::take($result['photos'] ?? [], 5),
+            hours: $result['regularOpeningHours'] ?? [],
+            websiteUri: $result['websiteUri'] ?? null,
         );
     }
 
     private static function extractAddressComponent(array $components, string $type): ?string
     {
         foreach ($components as $component) {
-            if (in_array($type, $component['types'], true)) {
+            if (in_array($type, $component['types'] ?? [], true)) {
                 return $component['short_name'] ?? $component['shortText'];
             }
         }

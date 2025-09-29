@@ -40,6 +40,8 @@ final readonly class PlacesApi
                 'places.containingPlaces',
                 'places.googleMapsLinks',
                 'places.googleMapsUri',
+                'places.regularOpeningHours',
+                'places.websiteUri',
             ]),
         ])->post('https://places.googleapis.com/v1/places:searchText', $request->body());
 

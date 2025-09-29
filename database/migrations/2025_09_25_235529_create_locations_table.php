@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
 
-            $table->decimal('longitude', 10, 7);
-            $table->decimal('latitude', 10, 7);
-            $table->string('formatted_address');
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->string('formatted_address')->nullable();
             $table->string('subpremise')->nullable();
             $table->string('street_number')->nullable();
             $table->string('route')->nullable();
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('postal_code_suffix')->nullable();
             $table->json('metadata')->nullable();
 
-            $table->string('place_id');
+            $table->string('place_id')->nullable()->index();
 
             $table->morphs('locatable');
         });
