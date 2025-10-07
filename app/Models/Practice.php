@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -108,6 +109,11 @@ class Practice extends Model implements Item
         return $this->morphOne(Location::class, 'locatable');
     }
 
+    public function leads(): HasMany
+    {
+        return $this->hasMany(Lead::class);
+    }
+
     public function syncKey(): string
     {
         return 'practice';
@@ -115,7 +121,7 @@ class Practice extends Model implements Item
 
     public function getContentFilePath(): string
     {
-        return 'generated_content/content_' . $this->getKey() . '.html';
+        return 'generated_content/' . $this->slug . '.html';
     }
 
     public function getContentFileDisk(): string
@@ -132,7 +138,7 @@ class Practice extends Model implements Item
             $array['contentHash'] = Storage::disk($this->getContentFileDisk())->lastModified($this->getContentFilePath());
         }
 
-        $array['phone_formatted'] = rescue(fn () => $this->phone?->formatNational());
+        $array['phone_formatted'] = rescue(fn() => $this->phone?->formatNational());
 
         $array['practitioners'] = array_map(fn($practitioner) => Arr::only($practitioner, [
             'id',
@@ -144,12 +150,12 @@ class Practice extends Model implements Item
             'specialization',
             'practitioner_type',
         ]), $array['practitioners'] ?? []);
-        
+
         $array['third_party_connections'] = array_map(fn($connection) => Arr::only($connection, [
             'provider',
             'external_id',
         ]), $array['third_party_connections'] ?? []);
-        
+
         $array['location'] = Arr::only($array['location'] ?? [], [
             'place_id',
             'latitude',
@@ -273,7 +279,7 @@ class Practice extends Model implements Item
                 'lat' => floatval($lat),
                 'lng' => floatval($lng),
             ],
-            'phone_formatted' => rescue(fn () => $this->phone?->formatNational()),
+            'phone_formatted' => rescue(fn() => $this->phone?->formatNational()),
             'third_party_connections' => array_map(fn($connection) => Arr::only($connection, [
                 'provider',
                 'external_id',

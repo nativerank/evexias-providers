@@ -37,6 +37,7 @@ class GeneratePracticeContent extends Command
             GeneratePracticeContentJob::dispatchSync($practice, null);
             $practice->touch();
             $bar->advance();
+
         });
 
         $bar->finish();
