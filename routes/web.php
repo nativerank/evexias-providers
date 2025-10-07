@@ -12,6 +12,7 @@ Route::view('dashboard', 'dashboard')
     ->name('dashboard');
 Route::middleware(['auth', 'verified'])->group(function () {
     Volt::route('/practices', 'practice-index')->name('practices');
+    Route::get('/leads', \App\Livewire\LeadsDashboard::class)->name('leads');
 });
 
 

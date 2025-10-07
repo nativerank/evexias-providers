@@ -30,6 +30,6 @@ class AppServiceProvider extends ServiceProvider
             'marketing_email' => MarketingEmail::class,
             'sales_rep' => SalesRep::class,
             'user' => User::class,
-        ]);    
+        ]);
     }
 }

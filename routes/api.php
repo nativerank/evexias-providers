@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\WPCallbackController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -9,3 +10,5 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/practice/wp-callback', [WPCallbackController::class, 'receiveCallback']);
+
+Route::post('/leads', [LeadController::class, 'store']);

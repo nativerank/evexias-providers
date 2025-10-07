@@ -62,14 +62,22 @@ class GeneratePracticeContentJob implements ShouldQueue
         $practiceName = $this->practiceData->name;
         $city = $this->practiceData->location->locality;
         $state = $this->practiceData->location->administrative_area_level_1;
-        $isEvexipelProvider = true;
+        $website = $this->practiceData->location->metadata['website_uri'] ?? null;
+        $reviews = collect($this->practiceData->location->metadata['reviews'])->map(function ($p) {
+            return $p['text'] ?? '';
+        })->toJson();
 
-        return "Create SEO-friendly HTML content for a medical practice website.
+
+        return "Create SEO-friendly HTML content for a medical practice profile page on EvexiPEL's practice locator.
+         I am also giving you the practice's website if it has one. Don't actually link to the website, use it for your knowledge. Also providing reviews for the practice if it has any, see if you can use them.
 
 **Practice Details:**
 - Practice Name: {$practiceName}
 - Location: {$city}, {$state}
-- Evexipel Provider: " . ($isEvexipelProvider ? 'Yes' : 'No') . "
+- Website: {$website}
+- Evexipel Provider: YES
+- Reviews: {$reviews}
+
 
 **Requirements:**
 1. Generate clean HTML content using only semantic tags (h1, h2, h3, p, ul, li, strong)
@@ -249,12 +257,7 @@ Return only the HTML content, no explanations or additional text.";
     private function storeGeneratedContent(string $content): void
     {
 
-
-        // Option 2: Store in file system
-        $filename = 'content_' . $this->practiceData->getKey() . '.html';
-
-        \Storage::disk('local')->put('generated_content/' . $filename, $content);
-
+        \Storage::disk($this->practiceData->getContentFileDisk())->put($this->practiceData->getContentFilePath(), $content);
 
     }
 
